@@ -6,6 +6,7 @@ using Syncfusion.DocIO.DLS;
 using Syncfusion.DocIORenderer;
 using Syncfusion.Drawing;
 using Syncfusion.Pdf;
+using Syncfusion.Pdf.Barcode;
 using Syncfusion.Pdf.Graphics;
 using Syncfusion.Pdf.Parsing;
 using Syncfusion.Pdf.Security;
@@ -151,43 +152,32 @@ namespace Automated_Certificate_Creation.Controllers
         /// </summary>
         private void ExecuteMailMerge(WordDocument document, DataSet dataSet, ArrayList commands)
         {
-            if (dataSet.Tables.Count == 0)
-            {
-                _logger.LogWarning("No tables in DataSet");
-                return;
-            }
-
             try
             {
                 document.MailMerge.StartAtNewPage = true;
 
-                if (dataSet.Tables.Count == 1)
+                string[] groupNames = document.MailMerge.GetMergeGroupNames();
+
+                //Uses the mail merge events handler for image fields
+                document.MailMerge.MergeImageField += new MergeImageFieldEventHandler(MergeField_ProductImage);
+
+                if ((groupNames == null || groupNames.Length == 0) && dataSet.Tables.Count == 1)
                 {
+                    // Single table - simple or group merge
                     DataTable table = dataSet.Tables[0];
-
-                    if (table.Rows.Count > 1)
-                    {
-                        _logger.LogInformation($"ExecuteGroup: {table.Rows.Count} records");
-                        document.MailMerge.ExecuteGroup(table);
-                    }
-                    else
-                    {
-                        _logger.LogInformation("Execute: Single record");
-                        document.MailMerge.StartAtNewPage = false;
-                        document.MailMerge.Execute(table);
-                    }
+                    document.MailMerge.Execute(table);
                 }
-                else
+                else if (groupNames != null && groupNames.Length > 0)
                 {
-                    bool hasNestedStructure = HasNestedStructure(document, dataSet);
-
-                    if (hasNestedStructure && commands != null)
+                    if (commands != null)
                     {
+                        // Build relationships and execute nested merge
                         _logger.LogInformation("ExecuteNestedGroup: Nested structure detected");
                         document.MailMerge.ExecuteNestedGroup(dataSet, commands);
                     }
                     else
                     {
+                        // No nesting - execute as independent groups
                         _logger.LogInformation("ExecuteNestedGroup: Flat structure");
                         commands = new ArrayList();
                         foreach (DataTable table in dataSet.Tables)
@@ -207,80 +197,27 @@ namespace Automated_Certificate_Creation.Controllers
                 throw new Exception($"Mail merge failed: {ex.Message}", ex);
             }
         }
-
         /// <summary>
-        /// Checks if Word template has nested merge regions
+        /// Binds the image from QR code during Mail merge process by using MergeImageFieldEventHandler.
         /// </summary>
-        private bool HasNestedStructure(WordDocument document, DataSet dataSet)
+        private static void MergeField_ProductImage(object sender, MergeImageFieldEventArgs args)
         {
-            try
+            //Binds image from QR code during mail merge
+            if (args.FieldName == "QRCode")
             {
-                string[] groupNames = document.MailMerge.GetMergeGroupNames();
+                //Initialize a new PdfQRBarcode instance 
+                PdfQRBarcode QRCode = new PdfQRBarcode();
+                //Set the XDimension and text for barcode
+                QRCode.XDimension = 2;
+                QRCode.Text = args.FieldValue as string;
 
-                if (groupNames == null || groupNames.Length < 2)
-                {
-                    _logger.LogInformation("No nested structure: Less than 2 groups in template");
-                    return false;
-                }
-
-                string rootGroup = groupNames[0];
-
-                DataTable parentTable = dataSet.Tables
-                    .Cast<DataTable>()
-                    .FirstOrDefault(t => string.Equals(t.TableName, rootGroup, StringComparison.OrdinalIgnoreCase));
-
-                if (parentTable == null)
-                {
-                    _logger.LogWarning($"Root group '{rootGroup}' not found in DataSet");
-                    return false;
-                }
-
-                foreach (string childGroup in groupNames.Skip(1))
-                {
-                    DataTable childTable = dataSet.Tables
-                        .Cast<DataTable>()
-                        .FirstOrDefault(t => string.Equals(t.TableName, childGroup, StringComparison.OrdinalIgnoreCase));
-
-                    if (childTable == null)
-                        continue;
-
-                    string commonColumn = FindCommonColumn(parentTable, childTable);
-
-                    if (!string.IsNullOrEmpty(commonColumn))
-                    {
-                        _logger.LogInformation($"Nested structure found: {parentTable.TableName}.{commonColumn} -> {childTable.TableName}.{commonColumn}");
-                        return true;
-                    }
-                }
-
-                _logger.LogInformation("No nested structure: No common columns found between tables");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error checking nested structure");
-                return false;
+                //Convert the QR code to image 
+                Stream barcodeImage = QRCode.ToImage(new SizeF(80, 80));
+                barcodeImage.Position = 0;
+                //Sets QR code image as result
+                args.ImageStream = barcodeImage;
             }
         }
-
-        /// <summary>
-        /// Finds common column name between two tables
-        /// </summary>
-        private string FindCommonColumn(DataTable parentTable, DataTable childTable)
-        {
-            var parentColumns = parentTable.Columns.Cast<DataColumn>()
-                .Select(c => c.ColumnName)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            var childColumns = childTable.Columns.Cast<DataColumn>()
-                .Select(c => c.ColumnName)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            string commonColumn = parentColumns.Intersect(childColumns, StringComparer.OrdinalIgnoreCase).FirstOrDefault();
-
-            return commonColumn;
-        }
-
         /// <summary>
         /// Generates output document based on certificate type (single or batch)
         /// </summary>
@@ -368,8 +305,8 @@ namespace Automated_Certificate_Creation.Controllers
             lastBookmarkPara.AppendBookmarkEnd($"Page_Bookmark_{bookmarkIndex}");
             body.ChildEntities.Add(lastBookmarkPara);
             // Step 4: Create ZIP file and convert each bookmarked section to PDF
-            var zipStream = new MemoryStream();
-            using (var zip = new ZipArchive(zipStream, System.IO.Compression.ZipArchiveMode.Create, leaveOpen: true))
+            MemoryStream zipStream = new MemoryStream();
+            using (ZipArchive zip = new ZipArchive(zipStream, System.IO.Compression.ZipArchiveMode.Create, leaveOpen: true))
             {
                 for (int i = 1; i <= bookmarkIndex; i++)
                 {
@@ -384,7 +321,6 @@ namespace Automated_Certificate_Creation.Controllers
 
                         using (WordDocument extractedDoc = documentPart.GetAsWordDocument())
                         {
-
                             // Convert to PDF
                             using (DocIORenderer render = new DocIORenderer())
                             using (PdfDocument pdfDocument = render.ConvertToPDF(extractedDoc))
@@ -396,8 +332,8 @@ namespace Automated_Certificate_Creation.Controllers
                                 // Apply digital signatures to each PDF
                                 MemoryStream signedPdfStream = ApplyDigitalSignatureIfEnabled(pdfStream, signatureImage, signatureKeywords, enableDigitalSign);
 
-                                var entry = zip.CreateEntry($"Document_{i}.pdf", CompressionLevel.Fastest);
-                                using (var entryStream = entry.Open())
+                                ZipArchiveEntry entry = zip.CreateEntry($"Document_{i}.pdf", CompressionLevel.Fastest);
+                                using (Stream entryStream = entry.Open())
                                 {
                                     signedPdfStream.CopyTo(entryStream);
                                 }
@@ -423,7 +359,7 @@ namespace Automated_Certificate_Creation.Controllers
             if (file != null && file.Length > 0)
             {
                 string extension = Path.GetExtension(file.FileName).ToLower();
-                string[] supportedExtensions = { ".doc", ".docx", ".dot", ".dotx", ".dotm", ".docm", ".rtf" };
+                string[] supportedExtensions = { ".doc", ".docx", ".dot", ".dotx", ".dotm", ".docm", ".rtf", ".md", ".txt", ".html" };
 
                 if (supportedExtensions.Contains(extension))
                 {
@@ -442,13 +378,13 @@ namespace Automated_Certificate_Creation.Controllers
             else
             {
                 // Case 2: Use default template
-                string defaultFilePath = Path.Combine(_hostingEnvironment.WebRootPath, "Data", "PropertyAgreementTemplate.docx");
+                string defaultFilePath = Path.Combine(_hostingEnvironment.WebRootPath, "Data", "Template.docx");
 
                 if (System.IO.File.Exists(defaultFilePath))
                 {
-                    using (var fileStream = new FileStream(defaultFilePath, FileMode.Open, FileAccess.Read))
+                    using (FileStream fileStream = new FileStream(defaultFilePath, FileMode.Open, FileAccess.Read))
                     {
-                        var memoryStream = new MemoryStream();
+                        MemoryStream memoryStream = new MemoryStream();
                         fileStream.CopyTo(memoryStream);
                         memoryStream.Position = 0;
                         _logger.LogInformation("Using default Word template.");
@@ -477,7 +413,7 @@ namespace Automated_Certificate_Creation.Controllers
                 {
                     string tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + extension);
 
-                    using (var fileStream = new FileStream(tempPath, FileMode.Create))
+                    using (FileStream fileStream = new FileStream(tempPath, FileMode.Create))
                     {
                         databaseFile.CopyTo(fileStream);
                     }
@@ -487,7 +423,7 @@ namespace Automated_Certificate_Creation.Controllers
                 }
             }
 
-            string defaultFilePath = Path.Combine(_hostingEnvironment.WebRootPath, "Data", "StudentDatabase.db");
+            string defaultFilePath = Path.Combine(_hostingEnvironment.WebRootPath, "Data", "CertificateDatabase.db");
 
             if (System.IO.File.Exists(defaultFilePath))
             {
@@ -590,32 +526,6 @@ namespace Automated_Certificate_Creation.Controllers
 
             return commands;
         }
-
-
-        /// <summary>
-        /// Extracts table name from "TableName.ColumnName"
-        /// </summary>
-        private string ExtractTableName(string tableDotColumn)
-        {
-            if (tableDotColumn.Contains("."))
-            {
-                return tableDotColumn.Split('.')[0].Trim();
-            }
-            return tableDotColumn.Trim();
-        }
-
-        /// <summary>
-        /// Extracts column name from "TableName.ColumnName"
-        /// </summary>
-        private string ExtractColumnName(string tableDotColumn)
-        {
-            if (tableDotColumn.Contains("."))
-            {
-                return tableDotColumn.Split('.')[1].Trim();
-            }
-            return tableDotColumn.Trim();
-        }
-
         /// <summary>
         /// Converts Word document to PDF and returns PDF stream
         /// </summary>
@@ -663,7 +573,7 @@ namespace Automated_Certificate_Creation.Controllers
                 _logger.LogInformation("Applying digital signatures to PDF document.");
 
                 // Initialize the extractor with required detection settings
-                var extractor = new DataExtractor { EnableFormDetection = false, EnableTableDetection = true, ConfidenceThreshold = 0.6 };
+                DataExtractor extractor = new DataExtractor { EnableFormDetection = false, EnableTableDetection = true, ConfidenceThreshold = 0.6 };
 
                 // Extract PDF document from the input stream
                 inputStream.Position = 0;
@@ -673,7 +583,7 @@ namespace Automated_Certificate_Creation.Controllers
                 AddSignaturesToPDFDocument(pdfDocument, signatureStream, signatureKeywordsInput);
 
                 // Save PDF with signatures
-                var outputMs = new MemoryStream();
+                MemoryStream outputMs = new MemoryStream();
                 pdfDocument.Save(outputMs);
                 pdfDocument.Close(true);
                 outputMs.Position = 0;
@@ -699,7 +609,7 @@ namespace Automated_Certificate_Creation.Controllers
         {
             // Use default keywords if none are provided
             string[] signatureKeywords = string.IsNullOrWhiteSpace(keywords)
-                ? new[] { "Sign", "WITNESS", "AuthorizedSign", "Signature" }
+                ? new[] { "Sign", "Principal", "Signature", "Director" }
                 : keywords.Split(',').Select(k => k.Trim()).ToArray();
 
             _logger.LogInformation($"Applying digital signatures for keywords: {string.Join(", ", signatureKeywords)}");
@@ -721,7 +631,7 @@ namespace Automated_Certificate_Creation.Controllers
                         // Skip words that do not match any signature keyword
                         if (!signatureKeywords.Any(k => word.Text.Contains(k, StringComparison.Ordinal)))
                             continue;
-
+                        
                         // Calculate signature position above the keyword
                         RectangleF bounds = word.Bounds;
                         float signatureX = bounds.X;
@@ -772,7 +682,7 @@ namespace Automated_Certificate_Creation.Controllers
             if (signatureImage != null && signatureImage.Length > 0)
             {
                 _logger.LogInformation("Using user-provided signature image stream.");
-                var memoryStream = new MemoryStream();
+                MemoryStream memoryStream = new MemoryStream();
                 signatureImage.OpenReadStream().CopyTo(memoryStream);
                 memoryStream.Position = 0;
                 return memoryStream;
@@ -786,8 +696,8 @@ namespace Automated_Certificate_Creation.Controllers
                 _logger.LogInformation($"Using default signature image from: {defaultImagePath}");
                 try
                 {
-                    var fileStream = new FileStream(defaultImagePath, FileMode.Open, FileAccess.Read);
-                    var memoryStream = new MemoryStream();
+                    FileStream fileStream = new FileStream(defaultImagePath, FileMode.Open, FileAccess.Read);
+                    MemoryStream memoryStream = new MemoryStream();
                     fileStream.CopyTo(memoryStream);
                     fileStream.Dispose();
                     memoryStream.Position = 0;
@@ -803,8 +713,6 @@ namespace Automated_Certificate_Creation.Controllers
             _logger.LogWarning($"Default signature image not found at: {defaultImagePath}");
             return null;
         }
-
-
         public IActionResult Privacy()
         {
             return View();

@@ -1,6 +1,277 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<style>
+    body {
+        background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+        min-height: 100vh;
+    }
+
+    .privacy-container {
+        max-width: 900px;
+        margin: 50px auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        padding: 50px;
+    }
+
+    .privacy-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding-bottom: 25px;
+        border-bottom: 3px solid #0ea5e9;
+    }
+
+        .privacy-header h1 {
+            color: #0f172a;
+            font-size: 38px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .privacy-header p {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+    .privacy-section {
+        margin-bottom: 35px;
+    }
+
+        .privacy-section h2 {
+            color: #0ea5e9;
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .privacy-section h3 {
+            color: #334155;
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 20px;
+            margin-bottom: 12px;
+        }
+
+        .privacy-section p {
+            color: #475569;
+            line-height: 1.9;
+            margin-bottom: 16px;
+            text-align: justify;
+            font-size: 15px;
+        }
+
+        .privacy-section ul {
+            margin-left: 30px;
+            margin-bottom: 16px;
+        }
+
+        .privacy-section li {
+            color: #475569;
+            line-height: 1.9;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+    .highlight-box {
+        background: #f0f9ff;
+        border-left: 5px solid #0ea5e9;
+        padding: 25px;
+        margin: 30px 0;
+        border-radius: 8px;
+    }
+
+        .highlight-box h3 {
+            color: #0369a1;
+            margin-bottom: 12px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .highlight-box p {
+            color: #0c4a6e;
+            margin: 0;
+            font-weight: 500;
+            line-height: 1.8;
+        }
+
+        .highlight-box ul {
+            margin-top: 12px;
+            margin-bottom: 0;
+        }
+
+        .highlight-box li {
+            color: #0c4a6e;
+        }
+
+    .warning-box {
+        background: #fef3c7;
+        border-left: 5px solid #f59e0b;
+        padding: 25px;
+        margin: 30px 0;
+        border-radius: 8px;
+    }
+
+        .warning-box h3 {
+            color: #92400e;
+            margin-bottom: 12px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .warning-box p {
+            color: #78350f;
+            margin: 0;
+            font-weight: 500;
+            line-height: 1.8;
+        }
+
+    .icon {
+        font-size: 26px;
+    }
+
+    .contact-section {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 30px;
+        margin-top: 40px;
+        text-align: center;
+    }
+
+        .contact-section h3 {
+            color: #0f172a;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .contact-section p {
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .contact-section a {
+            display: inline-block;
+            background: #0ea5e9;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+            .contact-section a:hover {
+                background: #0284c7;
+            }
+</style>
+
+<div class="privacy-container">
+    <div class="privacy-header">
+        <h1><span>🎓</span> Privacy Policy</h1>
+        <p>Last Updated: May 20, 2026</p>
+    </div>
+
+    <div class="privacy-section">
+        <h2><span class="icon">📋</span> Introduction</h2>
+        <p>
+            Welcome to EduCert Automated Certificate Generator. We understand the importance of data privacy
+            and security when handling student information and educational records. This Privacy Policy explains
+            how our application processes certificate templates and student database information during the
+            certificate generation process.
+        </p>
+        <p>
+            Our application is designed as a document processing tool that helps educational institutions generate
+            professional certificates by merging Word document templates with student database records. We are
+            committed to maintaining the highest standards of data security and privacy.
+        </p>
+    </div>
+
+    <div class="privacy-section">
+        <h2><span class="icon">🔒</span> Information We Process</h2>
+        <p>When you use our certificate generation service, we temporarily process the following information:</p>
+
+        <h3>Certificate Templates</h3>
+        <ul>
+            <li>Word document templates (.doc, .docx, .md, .txt, .docm, .dotm, .rtf, .html)</li>
+            <li>Certificate templates containing merge fields for student information</li>
+            <li>Custom educational document formats</li>
+        </ul>
+
+        <h3>Student Database Files</h3>
+        <ul>
+            <li>SQLite database files (.db, .sqlite, .sqlite3) containing student records</li>
+            <li>Structured data including student demographics, course information, grades, and instructor details</li>
+            <li>Multiple tables with relational database structures</li>
+            <li>Database relationship configurations for nested data processing</li>
+        </ul>
+
+        <h3>Digital Signature Assets</h3>
+        <ul>
+            <li>Optional signature image files (.png, .jpg, .jpeg, .gif, .bmp)</li>
+            <li>Signature placement keywords (Principal, Director, Sign, etc.)</li>
+            <li>Digital certificate files for PDF signature authentication</li>
+        </ul>
+
+        <h3>Generated Certificates</h3>
+        <ul>
+            <li>Individual or batch PDF certificates with student-specific information</li>
+            <li>Single consolidated PDF or multiple individual certificates in ZIP format</li>
+            <li>Digitally signed certificates with authorized signatory placement</li>
+        </ul>
+    </div>
+
+    <div class="privacy-section">
+        <h2><span class="icon">⚙️</span> How We Process Your Data</h2>
+        <p>
+            Our application uses Syncfusion DocIO library to perform mail merge operations and document conversion.
+            The processing workflow is as follows:
+        </p>
+
+        <h3>Document Processing Steps:</h3>
+        <ul>
+            <li><strong>Upload:</strong> Your certificate template and SQLite database file are uploaded to the server's temporary memory</li>
+            <li><strong>Database Connection:</strong> The system establishes a secure connection to the SQLite database and dynamically discovers all tables</li>
+            <li><strong>Relationship Parsing:</strong> Database table relationships are parsed based on your configuration (parent-child table linkages)</li>
+            <li><strong>Mail Merge Execution:</strong> Syncfusion DocIO performs intelligent mail merge - simple merge for single tables, nested group merge for relational databases</li>
+            <li><strong>PDF Conversion:</strong> The merged document is converted to PDF format using Syncfusion DocIORenderer</li>
+            <li><strong>Digital Signature Application:</strong> If enabled, authorized signatures are automatically placed above specified keywords in the certificate</li>
+            <li><strong>Certificate Generation:</strong> Based on your selection, either a single certificate or batch certificates (split by page breaks) are created</li>
+            <li><strong>ZIP Packaging:</strong> For batch processing, individual certificates are packaged into a compressed ZIP file</li>
+            <li><strong>Download:</strong> The generated certificate(s) are immediately sent to your browser for download</li>
+        </ul>
+    </div>
+
+    <div class="warning-box">
+        <h3><span>⚠️</span> Important Note</h3>
+        <p>
+            All processing happens locally in your browser, and files <strong>never</strong>
+            go to any external server. Everything stays private and secure on your machine. ✔️
+        </p>
+    </div>
+
+    <div class="contact-section">
+        <h3>📧 Questions or Concerns?</h3>
+        <p>
+            If you have any questions about this Privacy Policy or how we handle certificate generation and
+            database processing, please contact Syncfusion support for technical assistance:
+        </p>
+        <a href="https://support.syncfusion.com/support/tickets/create" target="_blank">
+            Contact Syncfusion Support
+        </a>
+    </div>
+</div>

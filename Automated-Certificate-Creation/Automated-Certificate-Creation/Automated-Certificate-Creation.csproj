@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.7" />
-    <PackageReference Include="Syncfusion.DocIORenderer.Net.Core" Version="33.2.5" />
-    <PackageReference Include="Syncfusion.SmartDataExtractor.Net.Core" Version="33.2.5" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="*" />
+    <PackageReference Include="Syncfusion.DocIORenderer.Net.Core" Version="*" />
+    <PackageReference Include="Syncfusion.SmartDataExtractor.Net.Core" Version="*" />
   </ItemGroup>
 
 </Project>

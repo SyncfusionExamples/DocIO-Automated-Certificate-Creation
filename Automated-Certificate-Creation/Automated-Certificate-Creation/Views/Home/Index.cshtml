@@ -998,10 +998,11 @@
                         <div class="file-formats">
                             <span>.DOCX</span>
                             <span>.DOC</span>
-                            <span>.DOTX</span>
+                            <span>.MD</span>
                             <span>.RTF</span>
+                            <span>.HTML</span>
                         </div>
-                        @Html.TextBox("TemplateFile", null, new { type = "file", accept = ".doc,.docx,.rtf,.dot,.dotm,.dotx,.docm", onchange = "handleFileSelect(this, 'template')" })
+                        @Html.TextBox("TemplateFile", null, new { type = "file", accept = ".doc,.docx,.rtf,.dot,.md,.dotx,.txt,.html", onchange = "handleFileSelect(this, 'template')" })
 
                         <div class="default-file-display" id="default-template">
                             <span class="file-icon">📑</span>
@@ -1163,9 +1164,9 @@
                                    id="signatureKeywords"
                                    class="text-input"
                                    placeholder="e.g., Principal, Dean, Director"
-                                   value="Principal, Director, AuthorizedBy, Signature" />
+                                   value="Principal, Director, Sign, Signature" />
                             <div class="helper-text">
-                                💡 Enter keywords separated by commas to identify signature placement locations in your certificate template. Default: "Principal, Director, AuthorizedBy"
+                                💡 Enter keywords separated by commas to identify signature placement locations in your certificate template. Default: "Principal, Director, Sign"
                             </div>
                         </div>
 
