@@ -1,0 +1,1257 @@
+﻿@{
+    ViewData["Title"] = "Certificate Generator";
+}
+
+<style>
+    /* ============================================
+           MODERN GLASSMORPHISM DARK THEME
+           ============================================ */
+
+    /* Base Styles */
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 100vh;
+        position: static !important;
+    }
+
+    body {
+        background: #0f172a;
+        background-image: radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.3) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.3) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.3) 0px, transparent 50%), radial-gradient(at 0% 100%, rgba(251, 191, 36, 0.3) 0px, transparent 50%);
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        margin-bottom: 0 !important;
+    }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+
+    header nav.navbar {
+        margin-bottom: 0 !important;
+    }
+
+    /* ============================================
+           HERO SECTION
+           ============================================ */
+    .hero-section {
+        text-align: center;
+        padding: 80px 20px 50px;
+        color: white;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 10px 24px;
+        border-radius: 100px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-title {
+        font-size: 56px;
+        font-weight: 900;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -2px;
+    }
+
+    .hero-subtitle {
+        font-size: 18px;
+        opacity: 0.85;
+        max-width: 700px;
+        margin: 0 auto 40px;
+        line-height: 1.7;
+        color: #cbd5e1;
+    }
+
+    .hero-stats {
+        display: flex;
+        justify-content: center;
+        gap: 60px;
+        margin-top: 40px;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+        .stat-item .stat-number {
+            font-size: 40px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-item .stat-label {
+            font-size: 14px;
+            opacity: 0.85;
+            margin-top: 8px;
+            color: #cbd5e1;
+        }
+
+    /* ============================================
+           MAIN CONTAINER & CARD
+           ============================================ */
+    .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px 80px;
+    }
+
+    .generator-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(30px);
+        border-radius: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+    }
+
+    /* ============================================
+           CARD HEADER & STEPS
+           ============================================ */
+    .card-header {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+        backdrop-filter: blur(20px);
+        padding: 40px 45px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .header-content {
+        color: white;
+    }
+
+    .steps-indicator {
+        display: flex;
+        justify-content: space-between;
+        gap: 25px;
+    }
+
+    .step-item {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .step-number {
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 18px;
+        flex-shrink: 0;
+        backdrop-filter: blur(10px);
+    }
+
+    .step-item.active .step-number {
+        background: rgba(59, 130, 246, 0.3);
+        border-color: #3b82f6;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    }
+
+    .step-text {
+        font-size: 15px;
+        font-weight: 600;
+        opacity: 0.9;
+    }
+
+    /* ============================================
+           CARD BODY
+           ============================================ */
+    .card-body {
+        padding: 50px 45px;
+    }
+
+    /* ============================================
+           FILE UPLOAD SECTION
+           ============================================ */
+    .upload-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+
+    .upload-card {
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 40px 30px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+    }
+
+        .upload-card:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(59, 130, 246, 0.05);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.3);
+        }
+
+        .upload-card.has-file {
+            border-color: rgba(16, 185, 129, 0.6);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.08));
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+        }
+
+            .upload-card.has-file::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #10b981, #059669);
+                border-radius: 24px 24px 0 0;
+            }
+
+    .upload-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 25px;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2));
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .upload-card:hover .upload-icon {
+        transform: scale(1.15) rotate(-8deg);
+    }
+
+    .upload-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 10px;
+    }
+
+    .upload-subtitle {
+        font-size: 14px;
+        color: #94a3b8;
+        margin-bottom: 20px;
+    }
+
+    .file-formats {
+        display: inline-flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+        .file-formats span {
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+    .upload-card input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+        .upload-card input[type="file"]::file-selector-button {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+            .upload-card input[type="file"]::file-selector-button:hover {
+                background: linear-gradient(135deg, #2563eb, #1d4ed8);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+            }
+
+    /* File Display Styles */
+    .default-file-display {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        font-size: 14px;
+        color: #f1f5f9;
+        font-weight: 700;
+        margin-top: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+        .default-file-display .file-icon {
+            font-size: 18px;
+        }
+
+        .default-file-display .default-badge {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1e293b;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+        }
+
+    .selected-file-display {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.25));
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(16, 185, 129, 0.6);
+        border-radius: 12px;
+        font-size: 14px;
+        color: #d1fae5;
+        font-weight: 700;
+        margin-top: 12px;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+    }
+
+        .selected-file-display.show {
+            display: inline-flex;
+        }
+
+        .selected-file-display .check-icon {
+            font-size: 18px;
+            color: #6ee7b7;
+        }
+
+        .selected-file-display .remove-btn {
+            margin-left: 10px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4);
+        }
+
+            .selected-file-display .remove-btn:hover {
+                background: linear-gradient(135deg, #dc2626, #b91c1c);
+                transform: scale(1.15);
+                box-shadow: 0 4px 15px rgba(239, 68, 68, 0.6);
+            }
+
+    /* ============================================
+           DATABASE RELATIONSHIP SECTION
+           ============================================ */
+    .relationship-section {
+        background: rgba(251, 191, 36, 0.05);
+        border: 2px solid rgba(251, 191, 36, 0.2);
+        border-radius: 24px;
+        padding: 35px;
+        margin-bottom: 40px;
+        backdrop-filter: blur(10px);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .section-icon {
+        width: 52px;
+        height: 52px;
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(245, 158, 11, 0.3));
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        backdrop-filter: blur(10px);
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #f1f5f9;
+    }
+
+    .info-box {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(251, 191, 36, 0.2);
+        border-radius: 16px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        backdrop-filter: blur(10px);
+    }
+
+        .info-box .info-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box .info-text {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.7;
+        }
+
+    .info-text code {
+        background: rgba(251, 191, 36, 0.2);
+        color: #fde047;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Consolas', 'Courier New', monospace;
+        font-size: 12px;
+    }
+
+    .relationship-input {
+        width: 100%;
+        padding: 16px;
+        border: 2px solid rgba(251, 191, 36, 0.2);
+        border-radius: 16px;
+        font-size: 14px;
+        font-family: 'Consolas', 'Courier New', monospace;
+        min-height: 140px;
+        resize: vertical;
+        transition: all 0.3s ease;
+        background: rgba(0, 0, 0, 0.3);
+        color: #e2e8f0;
+        backdrop-filter: blur(10px);
+    }
+
+        .relationship-input:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1);
+        }
+
+        .relationship-input::placeholder {
+            color: #64748b;
+        }
+
+    /* ============================================
+           CERTIFICATE TYPE SECTION
+           ============================================ */
+    .certificate-type-selector {
+        background: rgba(59, 130, 246, 0.05);
+        border: 2px solid rgba(59, 130, 246, 0.2);
+        border-radius: 24px;
+        padding: 35px;
+        margin-bottom: 40px;
+        backdrop-filter: blur(10px);
+    }
+
+        .certificate-type-selector .section-icon {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.3));
+        }
+
+    .certificate-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .certificate-option {
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(59, 130, 246, 0.2);
+        border-radius: 16px;
+        padding: 24px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        backdrop-filter: blur(10px);
+    }
+
+        .certificate-option:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(59, 130, 246, 0.08);
+            transform: translateY(-3px);
+        }
+
+        .certificate-option input[type="radio"] {
+            margin-top: 3px;
+            width: 22px;
+            height: 22px;
+            accent-color: #3b82f6;
+            cursor: pointer;
+        }
+
+        .certificate-option:has(input:checked) {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.15);
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.3);
+        }
+
+    .option-content {
+        flex: 1;
+    }
+
+    .option-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 6px;
+    }
+
+    .option-description {
+        font-size: 13px;
+        color: #94a3b8;
+        line-height: 1.6;
+    }
+
+    /* ============================================
+           DIGITAL SIGNATURE SECTION
+           ============================================ */
+    .signature-section-wrapper {
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.12), rgba(219, 39, 119, 0.12));
+        border: 2px solid rgba(236, 72, 153, 0.4);
+        border-radius: 24px;
+        padding: 35px;
+        margin-bottom: 40px;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 8px 32px rgba(236, 72, 153, 0.2);
+    }
+
+        .signature-section-wrapper .section-icon {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.4), rgba(219, 39, 119, 0.4));
+            color: #fce7f3;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+        }
+
+    .celldiv {
+        margin: 20px 0;
+    }
+
+    .radio-option {
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px);
+        padding: 18px 24px;
+        border-radius: 16px;
+        border: 2px solid rgba(236, 72, 153, 0.3);
+        transition: all 0.3s ease;
+    }
+
+        .radio-option:hover {
+            border-color: rgba(236, 72, 153, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+            box-shadow: 0 4px 20px rgba(236, 72, 153, 0.3);
+        }
+
+        .radio-option input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            margin-right: 14px;
+            cursor: pointer;
+            accent-color: #ec4899;
+        }
+
+        .radio-option label {
+            cursor: pointer;
+            color: #fce7f3;
+            font-size: 17px;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+    .signature-section {
+        display: none;
+        margin-top: 25px;
+        padding: 32px;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        border: 2px solid rgba(236, 72, 153, 0.3);
+        animation: slideDown 0.4s ease;
+        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .signature-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #fce7f3;
+        margin-bottom: 25px;
+        padding-bottom: 18px;
+        border-bottom: 2px solid rgba(236, 72, 153, 0.3);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .file-label {
+        font-size: 15px;
+        font-weight: 700;
+        color: #fce7f3;
+        margin-bottom: 12px;
+        display: block;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .custom-file-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 12px;
+    }
+
+    .custom-file-btn {
+        background: linear-gradient(135deg, #ec4899, #db2777);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        display: inline-block;
+        box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+        .custom-file-btn:hover {
+            background: linear-gradient(135deg, #db2777, #be185d);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+        }
+
+    .custom-file-wrapper input[type="file"] {
+        display: none;
+    }
+
+    .custom-file-name {
+        font-size: 14px;
+        color: #fce7f3;
+        font-weight: 600;
+        font-style: italic;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .text-input {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid rgba(236, 72, 153, 0.3);
+        border-radius: 12px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: rgba(0, 0, 0, 0.4);
+        color: #f1f5f9;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+    }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #ec4899;
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.2);
+        }
+
+        .text-input::placeholder {
+            color: #94a3b8;
+        }
+
+    .helper-text {
+        font-size: 13px;
+        color: #cbd5e1;
+        margin-top: 10px;
+        line-height: 1.6;
+        font-weight: 500;
+    }
+
+    .note-box {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.15));
+        backdrop-filter: blur(10px);
+        padding: 18px 22px;
+        border-left: 4px solid #fbbf24;
+        border-radius: 12px;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #fef3c7;
+        line-height: 1.7;
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.2);
+    }
+
+        .note-box strong {
+            color: #fde047;
+            font-weight: 700;
+        }
+
+        .note-box ul {
+            list-style-type: disc;
+            margin: 10px 0 0 20px;
+            padding: 0;
+        }
+
+            .note-box ul li {
+                margin-bottom: 6px;
+            }
+
+    /* ============================================
+           GENERATE BUTTON
+           ============================================ */
+    .generate-button {
+        width: 100%;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        padding: 22px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+        .generate-button:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 50px rgba(59, 130, 246, 0.5);
+        }
+
+        .generate-button:active {
+            transform: translateY(0);
+        }
+
+    .error-msg {
+        margin-top: 20px;
+        padding: 16px 20px;
+        background: #fef2f2;
+        border: 2px solid #fecaca;
+        border-radius: 12px;
+        color: #dc2626;
+        font-size: 14px;
+        font-weight: 600;
+        display: none;
+        animation: shake 0.5s ease;
+    }
+
+        .error-msg:not(:empty) {
+            display: block;
+        }
+
+    /* ============================================
+           FEATURES SECTION
+           ============================================ */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+        padding: 50px 45px;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .feature-box {
+        text-align: center;
+        padding: 25px;
+    }
+
+        .feature-box .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 18px;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-box h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 10px;
+        }
+
+        .feature-box p {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+    /* ============================================
+           ANIMATIONS
+           ============================================ */
+    @@keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            max-height: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            max-height: 2000px;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes shake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        10%, 30%, 50%, 70%, 90% {
+            transform: translateX(-5px);
+        }
+
+        20%, 40%, 60%, 80% {
+            transform: translateX(5px);
+        }
+    }
+
+    /* ============================================
+           RESPONSIVE DESIGN
+           ============================================ */
+    @@media (max-width: 768px) {
+        .hero-title {
+            font-size: 36px;
+        }
+
+        .upload-grid,
+        .certificate-options,
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-stats {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card-body {
+            padding: 30px 20px;
+        }
+
+        .steps-indicator {
+            flex-direction: column;
+        }
+    }
+</style>
+
+@using (Html.BeginForm("GenerateCertificate", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="hero-section">
+        <div class="hero-badge">
+            <span>🎓</span> EduCert AI-Powered Platform
+        </div>
+        <h1 class="hero-title">Automated Certificate Generator</h1>
+        <p class="hero-subtitle">
+            Transform your certificate templates and student database into professional certificates instantly.
+            Powered by Syncfusion DocIO and seamless database integration for education institutions.
+        </p>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-number">⚡</span>
+                <span class="stat-label">Smart Mail Merge</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">🔒</span>
+                <span class="stat-label">Digital Verification</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">🔗</span>
+                <span class="stat-label">Database Relations</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="generator-card">
+
+            <div class="card-header">
+                <div class="header-content">
+                    <div class="steps-indicator">
+                        <div class="step-item active">
+                            <div class="step-number">1</div>
+                            <div class="step-text">Upload Template</div>
+                        </div>
+                        <div class="step-item active">
+                            <div class="step-number">2</div>
+                            <div class="step-text">Upload Database</div>
+                        </div>
+                        <div class="step-item active">
+                            <div class="step-number">3</div>
+                            <div class="step-text">Configure & Generate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- FILE UPLOAD SECTION -->
+                <div class="upload-grid">
+                    <!-- CERTIFICATE TEMPLATE UPLOAD -->
+                    <div class="upload-card" id="template-card">
+                        <div class="upload-icon">📜</div>
+                        <div class="upload-title">Certificate Template</div>
+                        <div class="upload-subtitle">Upload your certificate design template</div>
+                        <div class="file-formats">
+                            <span>.DOCX</span>
+                            <span>.DOC</span>
+                            <span>.DOTX</span>
+                            <span>.RTF</span>
+                        </div>
+                        @Html.TextBox("TemplateFile", null, new { type = "file", accept = ".doc,.docx,.rtf,.dot,.dotm,.dotx,.docm", onchange = "handleFileSelect(this, 'template')" })
+
+                        <div class="default-file-display" id="default-template">
+                            <span class="file-icon">📑</span>
+                            <span>CertificateTemplate.docx</span>
+                            <span class="default-badge">Default</span>
+                        </div>
+
+                        <div class="selected-file-display" id="selected-template">
+                            <span class="check-icon">✓</span>
+                            <span id="template-filename"></span>
+                            <button type="button" class="remove-btn" onclick="removeFile('template')">×</button>
+                        </div>
+                    </div>
+
+                    <!-- STUDENT DATABASE UPLOAD - UPDATED FOR .DB FILE -->
+                    <div class="upload-card" id="database-card">
+                        <div class="upload-icon">🗄️</div>
+                        <div class="upload-title">Student Database</div>
+                        <div class="upload-subtitle">Upload SQLite database with student records</div>
+                        <div class="file-formats">
+                            <span>.DB</span>
+                            <span>.SQLITE</span>
+                            <span>.SQLITE3</span>
+                        </div>
+                        @Html.TextBox("DatabaseFile", null, new { type = "file", accept = ".db,.sqlite,.sqlite3", onchange = "handleFileSelect(this, 'database')" })
+
+                        <div class="default-file-display" id="default-database">
+                            <span class="file-icon">💾</span>
+                            <span>StudentDatabase.db</span>
+                            <span class="default-badge">Default</span>
+                        </div>
+
+                        <div class="selected-file-display" id="selected-database">
+                            <span class="check-icon">✓</span>
+                            <span id="database-filename"></span>
+                            <button type="button" class="remove-btn" onclick="removeFile('database')">×</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DATABASE RELATIONSHIP SECTION -->
+                <div class="relationship-section">
+                    <div class="section-header">
+                        <div class="section-icon">🔗</div>
+                        <div class="section-title">Database Relationship Configuration</div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-title">
+                            <span>💡</span> How to Configure (One Per Line)
+                        </div>
+                        <div class="info-text">
+                            <strong>Format:</strong> <code>TableName | Relationship</code><br />
+                            <strong>Parent Table:</strong> Use <code>string.Empty</code> for the first table<br />
+                            <strong>Child Tables:</strong> Use format <code>ChildColumn = %ParentTable.ParentColumn%</code>
+                        </div>
+                    </div>
+
+                    <div class="info-box" style="background: #dcfce7; border-color: #86efac;">
+                        <div class="info-title" style="color: #166534;">
+                            <span>📋</span> Example Configuration (Education Use Case)
+                        </div>
+                        <div class="info-text" style="font-family: 'Consolas', monospace; color: #166534; font-size: 13px; line-height: 1.8;">
+                            Students | string.Empty<br />
+                            Courses | StudentID = %Students.StudentID%<br />
+                            Instructors | CourseID = %Courses.CourseID%<br />
+                            Grades | StudentID = %Students.StudentID%
+                        </div>
+                    </div>
+
+                    <textarea name="Relationships" id="relationships" class="relationship-input"
+                          placeholder="Students | string.Empty&#10;Courses | StudentID = %Students.StudentID%&#10;Instructors | CourseID = %Courses.CourseID%&#10;Grades | StudentID = %Students.StudentID%"
+                          style="font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6;"></textarea>
+
+                    <div class="note-box">
+                        📌 <strong>Important Rules:</strong>
+                        <ul>
+                            <li><strong>One command per line</strong></li>
+                            <li>First line is the <strong>parent table</strong> with <code>string.Empty</code></li>
+                            <li>Use pipe <code>|</code> to separate table name and relationship</li>
+                            <li>Relationship format: <code>ChildColumn = %ParentTable.ParentColumn%</code></li>
+                            <li>Each child table must reference its parent table</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- CERTIFICATE TYPE SECTION -->
+                <div class="certificate-type-selector">
+                    <div class="section-header">
+                        <div class="section-icon">📋</div>
+                        <div class="section-title">Certificate Generation Type</div>
+                    </div>
+                    <div class="certificate-options">
+                        <label class="certificate-option">
+                            <input type="radio" name="certificateType" value="single" checked />
+                            <div class="option-content">
+                                <div class="option-title">
+                                    <span>📄</span> Single Certificate
+                                </div>
+                                <div class="option-description">
+                                    Generate one certificate with all records combined
+                                </div>
+                            </div>
+                        </label>
+                        <label class="certificate-option">
+                            <input type="radio" name="certificateType" value="batch" />
+                            <div class="option-content">
+                                <div class="option-title">
+                                    <span>📚</span> Batch Certificates
+                                </div>
+                                <div class="option-description">
+                                    Generate individual certificate for each student
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- DIGITAL SIGNATURE SECTION (OPTIONAL) - REPLACE THIS ENTIRE SECTION -->
+                <div class="signature-section-wrapper">
+                    <div class="section-header">
+                        <div class="section-icon">✍️</div>
+                        <div class="section-title">Digital Signature (Optional)</div>
+                    </div>
+
+                    <div class="celldiv">
+                        <div class="radio-option">
+                            <input type="checkbox"
+                                   id="enableDigitalSign"
+                                   name="enableDigitalSign"
+                                   value="true"
+                                   onchange="toggleSignatureSection()" />
+                            <input type="hidden" name="enableDigitalSign" value="false" />
+                            <label for="enableDigitalSign">✍️ Enable Authorized Signature</label>
+                        </div>
+                    </div>
+
+                    <div class="signature-section" id="signatureSection" style="display: none;">
+                        <div class="signature-title">✍️ Authorized Signatory Configuration</div>
+
+                        <div class="celldiv">
+                            <div class="file-label">🖼️ Signature Image File</div>
+                            <div class="custom-file-wrapper">
+                                <label class="custom-file-btn" for="signatureImage">Choose File</label>
+                                <input type="file" id="signatureImage" name="signatureImage"
+                                       accept=".png,.jpg,.jpeg,.gif,.bmp"
+                                       onchange="updateFileName(this, 'signatureImageName')" />
+                                <span class="custom-file-name" id="signatureImageName">AuthorizedSignature.png</span>
+                            </div>
+                            <div class="helper-text">
+                                💡 Upload authorized signatory image (Principal, Dean, Director). If not provided, default signature will be used based on keywords in your template.
+                            </div>
+                        </div>
+
+                        <div class="celldiv">
+                            <div class="file-label">🔍 Signature Placement Keywords</div>
+                            <input type="text"
+                                   name="signatureKeywords"
+                                   id="signatureKeywords"
+                                   class="text-input"
+                                   placeholder="e.g., Principal, Dean, Director"
+                                   value="Principal, Director, AuthorizedBy, Signature" />
+                            <div class="helper-text">
+                                💡 Enter keywords separated by commas to identify signature placement locations in your certificate template. Default: "Principal, Director, AuthorizedBy"
+                            </div>
+                        </div>
+
+                        <div class="note-box">
+                            📌 <strong>Note:</strong> Digital signatures will be automatically placed <strong>above</strong> the keywords specified in your certificate template. Ensure these keywords are present in your document for proper signature placement.
+                        </div>
+                    </div>
+                </div>
+
+                <button class="generate-button" type="submit">
+                    <span>🚀</span>
+                    <span>Generate Certificate(s) as PDF</span>
+                </button>
+
+                <div class="error-msg">@ViewBag.Message</div>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <div class="feature-icon">🔄</div>
+                    <h4>Smart Mail Merge</h4>
+                    <p>Advanced DocIO mail merge with relational database support</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">🎓</div>
+                    <h4>Education Focused</h4>
+                    <p>Designed specifically for certificates, transcripts, and awards</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">✍️</div>
+                    <h4>Digital Signatures</h4>
+                    <p>Automated PDF export with authorized signatory placement</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">⚡</div>
+                    <h4>Batch Processing</h4>
+                    <p>Generate hundreds of certificates in seconds</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">🔒</div>
+                    <h4>Secure Processing</h4>
+                    <p>No data storage, automatic cleanup after generation</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">📊</div>
+                    <h4>Database Integration</h4>
+                    <p>Direct integration with student management systems</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+}
+
+<script>
+    function toggleSignatureSection() {
+        const checkbox = document.getElementById('enableDigitalSign');
+        const signatureSection = document.getElementById('signatureSection');
+
+        if (checkbox.checked) {
+            signatureSection.style.display = 'block';
+        } else {
+            signatureSection.style.display = 'none';
+            // Reset signature fields when disabled
+            document.getElementById('signatureImage').value = '';
+            document.getElementById('signatureImageName').textContent = 'AuthorizedSignature.png';
+            document.getElementById('signatureKeywords').value = 'Principal, Director, AuthorizedBy, Signature';
+        }
+    }
+
+    function updateFileName(input, displayId) {
+        const displayElement = document.getElementById(displayId);
+        if (input.files && input.files[0]) {
+            displayElement.textContent = input.files[0].name;
+        } else {
+            displayElement.textContent = 'AuthorizedSignature.png';
+        }
+    }
+
+    // Ensure signature section is hidden on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const signatureSection = document.getElementById('signatureSection');
+        const checkbox = document.getElementById('enableDigitalSign');
+
+        if (!checkbox.checked) {
+            signatureSection.style.display = 'none';
+        }
+    });
+</script>
