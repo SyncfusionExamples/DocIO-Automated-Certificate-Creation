@@ -1222,6 +1222,34 @@
 }
 
 <script>
+    function handleFileSelect(input, fileType) {
+        if (input.files && input.files[0]) {
+            const fileName = input.files[0].name;
+
+            // Update file display based on type
+            const defaultDisplay = document.getElementById(`default-${fileType}`);
+            const selectedDisplay = document.getElementById(`selected-${fileType}`);
+            const filenameSpan = document.getElementById(`${fileType}-filename`);
+
+            // Hide default, show selected
+            defaultDisplay.style.display = 'none';
+            selectedDisplay.classList.add('show');
+            filenameSpan.textContent = fileName;
+        }
+    }
+
+    function removeFile(fileType) {
+        // Clear the file input
+        const fileInput = document.querySelector(`input[name="${fileType === 'template' ? 'TemplateFile' : 'DatabaseFile'}"]`);
+        fileInput.value = '';
+
+        // Reset display
+        const defaultDisplay = document.getElementById(`default-${fileType}`);
+        const selectedDisplay = document.getElementById(`selected-${fileType}`);
+
+        defaultDisplay.style.display = 'inline-flex';
+        selectedDisplay.classList.remove('show');
+    }
     function toggleSignatureSection() {
         const checkbox = document.getElementById('enableDigitalSign');
         const signatureSection = document.getElementById('signatureSection');
