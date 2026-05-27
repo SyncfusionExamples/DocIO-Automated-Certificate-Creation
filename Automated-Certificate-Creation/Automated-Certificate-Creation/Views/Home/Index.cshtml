@@ -1052,35 +1052,17 @@
                             <strong>Format:</strong> <code>TableName | Relationship</code><br />
                             <strong>Parent Table:</strong> Use <code>string.Empty</code> for the first table<br />
                             <strong>Child Tables:</strong> Use format <code>ChildColumn = %ParentTable.ParentColumn%</code>
+                            <div style="color: #fbbf24; margin-top: 12px; font-size: 14px; font-weight: 500;">
+                                <strong>Note:</strong> Provide your database relationships in the text area below as per your database
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="info-box" style="background: #dcfce7; border-color: #86efac;">
-                        <div class="info-title" style="color: #166534;">
-                            <span>📋</span> Example Configuration (Education Use Case)
-                        </div>
-                        <div class="info-text" style="font-family: 'Consolas', monospace; color: #166534; font-size: 13px; line-height: 1.8;">
-                            Students | string.Empty<br />
-                            Courses | StudentID = %Students.StudentID%<br />
-                            Instructors | CourseID = %Courses.CourseID%<br />
-                            Grades | StudentID = %Students.StudentID%
-                        </div>
-                    </div>
+                    </div>                  
 
                     <textarea name="Relationships" id="relationships" class="relationship-input"
                           placeholder="Students | string.Empty&#10;Courses | StudentID = %Students.StudentID%&#10;Instructors | CourseID = %Courses.CourseID%&#10;Grades | StudentID = %Students.StudentID%"
                           style="font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6;"></textarea>
 
-                    <div class="note-box">
-                        📌 <strong>Important Rules:</strong>
-                        <ul>
-                            <li><strong>One command per line</strong></li>
-                            <li>First line is the <strong>parent table</strong> with <code>string.Empty</code></li>
-                            <li>Use pipe <code>|</code> to separate table name and relationship</li>
-                            <li>Relationship format: <code>ChildColumn = %ParentTable.ParentColumn%</code></li>
-                            <li>Each child table must reference its parent table</li>
-                        </ul>
-                    </div>
+          
                 </div>
 
                 <!-- CERTIFICATE TYPE SECTION -->
