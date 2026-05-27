@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="*" />
     <PackageReference Include="Syncfusion.DocIORenderer.Net.Core" Version="*" />
     <PackageReference Include="Syncfusion.SmartDataExtractor.Net.Core" Version="*" />
+    <PackageReference Include="System.Data.OleDb" Version="*" />
   </ItemGroup>
 
 </Project>

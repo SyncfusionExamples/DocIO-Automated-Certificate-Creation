@@ -1,6 +1,5 @@
 ﻿using Automated_Certificate_Creation.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.Sqlite;
 using Syncfusion.DocIO;
 using Syncfusion.DocIO.DLS;
 using Syncfusion.DocIORenderer;
@@ -13,6 +12,7 @@ using Syncfusion.Pdf.Security;
 using Syncfusion.SmartDataExtractor;
 using System.Collections;
 using System.Data;
+using System.Data.OleDb;
 using System.Diagnostics;
 using System.IO.Compression;
 
@@ -49,7 +49,7 @@ namespace Automated_Certificate_Creation.Controllers
                     return View("Index");
                 }
 
-                // Step 2: Load SQLite Database (uploaded or default)
+                // Step 2: Load Access Database (uploaded or default)
                 string databasePath = GetDatabaseFile(model.DatabaseFile);
                 if (string.IsNullOrEmpty(databasePath))
                 {
@@ -58,7 +58,7 @@ namespace Automated_Certificate_Creation.Controllers
                 }
 
                 // Step 3: Create DataSet from SQLite database
-                DataSet dataSet = CreateDataSetFromSQLite(databasePath);
+                DataSet dataSet = CreateDataSetFromMDB(databasePath);
                 if (dataSet == null || dataSet.Tables.Count == 0)
                 {
                     ViewBag.Message = "No tables found in the database.";
@@ -86,62 +86,77 @@ namespace Automated_Certificate_Creation.Controllers
         }
 
         /// <summary>
-        /// Creates a DataSet from SQLite database by dynamically discovering all tables
+        /// Creates a DataSet from an MDB/ACCDB file by dynamically discovering and loading all tables
         /// </summary>
-        private DataSet CreateDataSetFromSQLite(string dbFilePath)
+        private DataSet CreateDataSetFromMDB(string mdbFilePath)
         {
             DataSet dataSet = new DataSet();
-            string connectionString = $"Data Source={dbFilePath};";
+
+            // Determine connection string based on file extension
+            string extension = Path.GetExtension(mdbFilePath).ToLower();
+            string connectionString;
+
+            if (extension == ".accdb")
+            {
+                connectionString = $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={mdbFilePath};";
+            }
+            else // .mdb
+            {
+                // Try ACE first (works for both old and new formats)
+                connectionString = $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={mdbFilePath};";
+                // Fallback: Provider=Microsoft.Jet.OLEDB.4.0 for older systems
+            }
 
             try
             {
-                using (SqliteConnection conn = new SqliteConnection(connectionString))
+                using (OleDbConnection conn = new OleDbConnection(connectionString))
                 {
                     conn.Open();
-                    _logger.LogInformation("SQLite database connection opened successfully.");
+                    _logger.LogInformation("Database connection opened successfully.");
 
-                    // Query to get all user tables (excluding SQLite system tables)
-                    string tableQuery = "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name;";
+                    // Get all table names from the database schema
+                    DataTable schemaTable = conn.GetOleDbSchemaTable(
+                        OleDbSchemaGuid.Tables,
+                        new object[] { null, null, null, "TABLE" });
 
-                    List<string> tableNames = new List<string>();
-
-                    using (SqliteCommand cmd = new SqliteCommand(tableQuery, conn))
-                    using (SqliteDataReader reader = cmd.ExecuteReader())
+                    if (schemaTable != null)
                     {
-                        while (reader.Read())
+                        _logger.LogInformation($"Found {schemaTable.Rows.Count} tables in database.");
+
+                        foreach (DataRow row in schemaTable.Rows)
                         {
-                            tableNames.Add(reader.GetString(0));
-                        }
-                    }
+                            string tableName = row["TABLE_NAME"].ToString();
 
-                    _logger.LogInformation($"Found {tableNames.Count} tables in database.");
-
-                    // Load each table into DataSet using SqliteDataReader
-                    foreach (string tableName in tableNames)
-                    {
-                        try
-                        {
-                            string selectQuery = $"SELECT * FROM [{tableName}]";
-
-                            using (SqliteCommand selectCmd = new SqliteCommand(selectQuery, conn))
-                            using (SqliteDataReader reader = selectCmd.ExecuteReader())
+                            // Skip system tables (MSys*, ~TMPCLP*, etc.)
+                            if (tableName.StartsWith("MSys") || tableName.StartsWith("~"))
                             {
-                                DataTable table = new DataTable(tableName);
-                                table.Load(reader);  // Load data from reader into DataTable
-                                dataSet.Tables.Add(table);
-                                _logger.LogInformation($"Loaded table '{tableName}' with {table.Rows.Count} rows.");
+                                _logger.LogDebug($"Skipping system table: {tableName}");
+                                continue;
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, $"Error loading table '{tableName}'");
+
+                            // Load each user table into the DataSet
+                            try
+                            {
+                                string query = $"SELECT * FROM [{tableName}]";
+                                using (OleDbDataAdapter adapter = new OleDbDataAdapter(query, conn))
+                                {
+                                    DataTable table = new DataTable(tableName);
+                                    adapter.Fill(table);
+                                    dataSet.Tables.Add(table);
+                                    _logger.LogInformation($"Loaded table '{tableName}' with {table.Rows.Count} rows.");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, $"Error loading table '{tableName}'");
+                            }
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error loading SQLite database: {dbFilePath}");
+                _logger.LogError(ex, $"Error loading MDB file: {mdbFilePath}");
                 throw new Exception($"Database connection error: {ex.Message}", ex);
             }
 
@@ -359,7 +374,7 @@ namespace Automated_Certificate_Creation.Controllers
             if (file != null && file.Length > 0)
             {
                 string extension = Path.GetExtension(file.FileName).ToLower();
-                string[] supportedExtensions = { ".doc", ".docx", ".dot", ".dotx", ".dotm", ".docm", ".rtf", ".md", ".txt", ".html" };
+                string[] supportedExtensions = { ".doc", ".docx", ".dot", ".dotx", ".dotm", ".docm", ".rtf" };
 
                 if (supportedExtensions.Contains(extension))
                 {
@@ -399,18 +414,20 @@ namespace Automated_Certificate_Creation.Controllers
                 }
             }
         }
-
         /// <summary>
         /// Retrieves database file path from uploaded file or default database
+        /// Returns the physical file path (required for OleDb connection)
         /// </summary>
         private string GetDatabaseFile(IFormFile databaseFile)
         {
+            // Case 1: User uploaded a database file
             if (databaseFile != null && databaseFile.Length > 0)
             {
                 string extension = Path.GetExtension(databaseFile.FileName).ToLower();
 
-                if (extension == ".db" || extension == ".sqlite" || extension == ".sqlite3")
+                if (extension == ".mdb" || extension == ".accdb")
                 {
+                    // Save uploaded file to temporary location
                     string tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + extension);
 
                     using (FileStream fileStream = new FileStream(tempPath, FileMode.Create))
@@ -421,32 +438,30 @@ namespace Automated_Certificate_Creation.Controllers
                     _logger.LogInformation($"Using user-uploaded database: {databaseFile.FileName}");
                     return tempPath;
                 }
+                else
+                {
+                    ViewBag.Message = "Please upload a valid Access database (.mdb or .accdb).";
+                    return null;
+                }
             }
-
-            string defaultFilePath = Path.Combine(_hostingEnvironment.WebRootPath, "Data", "CertificateDatabase.db");
-
-            if (System.IO.File.Exists(defaultFilePath))
+            else
             {
-                _logger.LogInformation("Using default database.");
-                return defaultFilePath;
+                // Case 2: Use default database
+                string defaultFilePath = Path.Combine(_hostingEnvironment.WebRootPath, "Data", "CertificateDetails.mdb");
+
+                if (System.IO.File.Exists(defaultFilePath))
+                {
+                    _logger.LogInformation("Using default database.");
+                    return defaultFilePath;
+                }
+                else
+                {
+                    _logger.LogError($"Default database not found at: {defaultFilePath}");
+                    ViewBag.Message = "Default database file not found.";
+                    return null;
+                }
             }
-
-            _logger.LogError($"Default database not found at: {defaultFilePath}");
-            return null;
         }
-
-        /// <summary>
-        /// Creates a DataSet from an MDB/ACCDB file by dynamically discovering and loading all tables
-        /// </summary>
-        private DataSet CreateDataSetFromMDB(string mdbFilePath)
-        {
-            DataSet dataSet = new DataSet();
-
-            
-
-            return dataSet;
-        }
-
         /// <summary>
         /// Parses user-provided relationship string into ArrayList of DictionaryEntry commands
         /// Format: Each line contains "TableName | Relationship"

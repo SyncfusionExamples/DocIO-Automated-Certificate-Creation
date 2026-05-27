@@ -942,7 +942,7 @@
 
     <div class="hero-section">
         <div class="hero-badge">
-            <span>🎓</span> EduCert AI-Powered Platform
+            <span>🎓</span> EduCert Platform
         </div>
         <h1 class="hero-title">Automated Certificate Generator</h1>
         <p class="hero-subtitle">
@@ -953,10 +953,6 @@
             <div class="stat-item">
                 <span class="stat-number">⚡</span>
                 <span class="stat-label">Smart Mail Merge</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number">🔒</span>
-                <span class="stat-label">Digital Verification</span>
             </div>
             <div class="stat-item">
                 <span class="stat-number">🔗</span>
@@ -998,11 +994,9 @@
                         <div class="file-formats">
                             <span>.DOCX</span>
                             <span>.DOC</span>
-                            <span>.MD</span>
                             <span>.RTF</span>
-                            <span>.HTML</span>
                         </div>
-                        @Html.TextBox("TemplateFile", null, new { type = "file", accept = ".doc,.docx,.rtf,.dot,.md,.dotx,.txt,.html", onchange = "handleFileSelect(this, 'template')" })
+                        @Html.TextBox("TemplateFile", null, new { type = "file", accept = ".doc,.docx,.rtf,.dot,.dotx", onchange = "handleFileSelect(this, 'template')" })
 
                         <div class="default-file-display" id="default-template">
                             <span class="file-icon">📑</span>
